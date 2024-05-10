@@ -26,21 +26,36 @@ public class Register extends JFrame {
         emailField = new JTextField(20);
         phoneField = new JTextField(20);
         JButton registerButton = new JButton("Register");
+        JButton backButton = new JButton("Back"); // Back button
 
-        // Set layout
-        setLayout(new GridLayout(5, 2));
+        // Set layout to GridBagLayout
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(10, 10, 10, 10); // Add padding
 
         // Add components to the frame
-        add(usernameLabel);
-        add(usernameField);
-        add(passwordLabel);
-        add(passwordField);
-        add(emailLabel);
-        add(emailField);
-        add(phoneLabel);
-        add(phoneField);
-        add(new JLabel()); // Empty label for spacing
-        add(registerButton);
+        add(usernameLabel, gbc);
+        gbc.gridy++;
+        add(usernameField, gbc);
+        gbc.gridy++;
+        add(passwordLabel, gbc);
+        gbc.gridy++;
+        add(passwordField, gbc);
+        gbc.gridy++;
+        add(emailLabel, gbc);
+        gbc.gridy++;
+        add(emailField, gbc);
+        gbc.gridy++;
+        add(phoneLabel, gbc);
+        gbc.gridy++;
+        add(phoneField, gbc);
+        gbc.gridy++;
+        gbc.anchor = GridBagConstraints.CENTER; // Align buttons to center
+        add(registerButton, gbc);
+        gbc.gridy++;
+        add(backButton, gbc); // Add back button below register button
 
         // Add action listener to the register button
         registerButton.addActionListener(new ActionListener() {
@@ -60,8 +75,18 @@ public class Register extends JFrame {
             }
         });
 
+        // Add action listener to the back button
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Login login = new Login();
+                login.setVisible(true);
+                Register.this.dispose();
+            }
+        });
+
         // Set frame properties
-        setSize(300, 200);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window to fit the screen
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Center the frame on the screen
         setVisible(true);
@@ -70,12 +95,14 @@ public class Register extends JFrame {
     // Method to register user in the database
     private boolean registerUser(String username, String password, String email, String phone) {
         try {
-            String query = "INSERT INTO user (username, password, email, phone) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO user (username, password, email, phone, type) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = db.conn.prepareStatement(query);
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, password);
             preparedStatement.setString(3, email);
             preparedStatement.setString(4, phone);
+            preparedStatement.setString(5, "customer");
+
             int rowsInserted = preparedStatement.executeUpdate();
             if (rowsInserted > 0) {
                 return true;

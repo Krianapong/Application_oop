@@ -21,17 +21,28 @@ public class Login extends JFrame {
         usernameField = new JTextField(20);
         passwordField = new JPasswordField(20);
         JButton loginButton = new JButton("Login");
+        JButton registerButton = new JButton("Register"); // New button for registering
 
-        // Set layout
-        setLayout(new GridLayout(3, 2));
+        // Set layout to GridBagLayout
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(10, 10, 10, 10); // Add padding
 
         // Add components to the frame
-        add(usernameLabel);
-        add(usernameField);
-        add(passwordLabel);
-        add(passwordField);
-        add(new JLabel()); // Empty label for spacing
-        add(loginButton);
+        add(usernameLabel, gbc);
+        gbc.gridy++;
+        add(usernameField, gbc);
+        gbc.gridy++;
+        add(passwordLabel, gbc);
+        gbc.gridy++;
+        add(passwordField, gbc);
+        gbc.gridy++;
+        gbc.anchor = GridBagConstraints.CENTER; // Align buttons to center
+        add(loginButton, gbc);
+        gbc.gridy++;
+        add(registerButton, gbc); // Add register button below login button
 
         // Add action listener to the login button
         loginButton.addActionListener(new ActionListener() {
@@ -41,30 +52,43 @@ public class Login extends JFrame {
                 String password = new String(passwordField.getPassword());
 
                 // Authenticate user against database
-                if (authenticateUser(username, password)) {
-                    JOptionPane.showMessageDialog(Login.this, "Login successful!");
+                String userType = authenticateUser(username, password);
+                if (userType != null) {
+                    // Login successful, open corresponding page
+                    openPage(userType);
                 } else {
                     JOptionPane.showMessageDialog(Login.this, "Invalid username or password. Please try again.");
                 }
             }
         });
 
+        // Add action listener to the register button
+        registerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Open register page
+                Register registerPage = new Register();
+                registerPage.setVisible(true);
+                Login.this.dispose();
+            }
+        });
+
         // Set frame properties
-        setSize(300, 150);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window to fit the screen
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Center the frame on the screen
         setVisible(true);
     }
 
     // Method to authenticate user against database
-    private boolean authenticateUser(String username, String password) {
-        String query = "SELECT * FROM user WHERE username = '" + username + "' AND password = '" + password + "'";
+    private String authenticateUser(String username, String password) {
+        String query = "SELECT type FROM user WHERE username = '" + username + "' AND password = '" + password + "'";
         ResultSet resultSet = db.executeQuery(query);
 
         try {
             if (resultSet.next()) {
-                // User found in the database
-                return true;
+                // User found in the database, return the user type
+                return resultSet.getString("type");
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -72,7 +96,22 @@ public class Login extends JFrame {
             db.disconnect(); // Disconnect from the database
         }
 
-        return false;
+        return null;
+    }
+
+    // Method to open the corresponding page based on user type
+    private void openPage(String userType) {
+        if (userType.equals("admin")) {
+            // Open admin page
+            AdminPage adminPage = new AdminPage();
+            adminPage.setVisible(true);
+        } else if (userType.equals("customer")) {
+            // Open customer page
+            CustomerPage customerPage = new CustomerPage();
+            customerPage.setVisible(true);
+        }
+        // Close the login window
+        dispose();
     }
 
     public static void main(String[] args) {
